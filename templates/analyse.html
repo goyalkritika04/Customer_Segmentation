@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze Data{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3><i class="bi bi-filter-square"></i> Analyze Customer Data</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select class="form-select" name="gender" id="gender">
+                            <option value="">All Genders</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="ever_married" class="form-label">Marital Status</label>
+                        <select class="form-select" name="ever_married" id="ever_married">
+                            <option value="">All</option>
+                            <option value="Yes">Married</option>
+                            <option value="No">Not Married</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="graduated" class="form-label">Graduated</label>
+                        <select class="form-select" name="graduated" id="graduated">
+                            <option value="">All</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="profession" class="form-label">Profession</label>
+                        <select class="form-select" name="profession" id="profession">
+                            <option value="">All Professions</option>
+                            {% for profession in professions %}
+                            <option value="{{ profession }}">{{ profession }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="spending_score" class="form-label">Spending Score</label>
+                        <select class="form-select" name="spending_score" id="spending_score">
+                            <option value="">All Scores</option>
+                            {% for score in spending_scores %}
+                            <option value="{{ score }}">{{ score }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="age_min" class="form-label">Minimum Age</label>
+                        <input type="number" class="form-control" name="age_min" id="age_min" min="0" max="100">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="age_max" class="form-label">Maximum Age</label>
+                        <input type="number" class="form-control" name="age_max" id="age_max" min="0" max="100">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="family_size_min" class="form-label">Min Family Size</label>
+                        <input type="number" class="form-control" name="family_size_min" id="family_size_min" min="1">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="family_size_max" class="form-label">Max Family Size</label>
+                        <input type="number" class="form-control" name="family_size_max" id="family_size_max" min="1">
+                    </div>
+                    
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Apply Filters
+                        </button>
+                        <a href="{{ url_for('analyze_data') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

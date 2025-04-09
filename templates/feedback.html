@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-chat-square-text me-2"></i>Share Your Feedback
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        We value your input! Your feedback will be visible to administrators.
+                    </div>
+                    
+                    <form id="feedbackForm">
+                        <div class="mb-3">
+                            <label for="feedbackText" class="form-label">Your Feedback</label>
+                            <textarea class="form-control" id="feedbackText" rows="5" 
+                                    placeholder="What do you like about our service? What can we improve?" 
+                                    required></textarea>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-send-fill me-2"></i>Submit Feedback
+                            </button>
+                            <a href="{{ url_for('view_feedback') }}" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-eye-fill me-2"></i>View Feedback
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <div id="feedbackResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const feedbackText = document.getElementById('feedbackText').value.trim();
+    const feedbackResult = document.getElementById('feedbackResult');
+    const submitBtn = this.querySelector('button[type="submit"]');
+    
+    if (!feedbackText) {
+        feedbackResult.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                Please enter your feedback before submitting.
+            </div>
+        `;
+        return;
+    }
+    
+    // Disable button during submission
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
+    
+    fetch('/submit_feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback: feedbackText })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            feedbackResult.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    ${data.message} <a href="{{ url_for('view_feedback') }}" class="alert-link">View all feedback</a>
+                </div>
+            `;
+            document.getElementById('feedbackText').value = '';
+        } else {
+            feedbackResult.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                    ${data.message}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        feedbackResult.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                Error submitting feedback. Please try again.
+            </div>
+        `;
+        console.error('Feedback error:', error);
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-send-fill me-2"></i>Submit Feedback';
+    });
+});
+</script>
+{% endblock %}

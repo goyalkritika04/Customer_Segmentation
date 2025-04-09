@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Clustering App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #007BFF, #00d4ff);
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(15px);
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            text-decoration: none;
+        }
+
+        .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+        }
+
+        .flash-messages li {
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .error-message {
+            background-color: rgba(255, 0, 0, 0.3);
+        }
+
+        .success-message {
+            background-color: rgba(0, 255, 0, 0.3);
+        }
+
+        .chatbot-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chatbot-container p {
+            font-size: 14px;
+            color: #f1f1f1;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🚀 Welcome to the Clustering App</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% if current_user.is_authenticated %}
+            <p>Hello, <strong>{{ current_user.username or current_user.id }}</strong>! 🎉</p>
+            <a href="{{ url_for('logout_page') }}" class="button">🔓 Logout</a>
+        {% else %}
+            <a href="{{ url_for('login_page') }}" class="button">🔑 Login</a>
+            <a href="{{ url_for('register_page') }}" class="button">📝 Register</a>
+        {% endif %}
+
+        <!-- Chatbot Section -->
+        <div class="chatbot-container">
+            <p>💬 Need help? Chat with our AI assistant below!</p>
+            <div id="botui-app"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Chatbot Initialization
+        var botui = new BotUI('botui-app');
+
+        botui.message.add({
+            content: 'Hello! How can I assist you today? 😊'
+        }).then(function () {
+            return botui.action.button({
+                action: [
+                    { text: '📊 View Segmentation', value: 'view' },
+                    { text: '💾 Upload Data', value: 'upload' }
+                ]
+            });
+        }).then(function (res) {
+            if (res.value === 'view') {
+                botui.message.add({ content: 'You can explore the customer segmentation results here! 🚀' });
+            } else {
+                botui.message.add({ content: 'Use the Upload button above to add new datasets. 📂' });
+            }
+        });
+    </script>
+
+    <!-- BotUI Library -->
+    <link rel="stylesheet" href="https://cdn.botui.org/botui.min.css">
+    <script src="https://cdn.botui.org/botui.min.js"></script>
+
+</body>
+</html>

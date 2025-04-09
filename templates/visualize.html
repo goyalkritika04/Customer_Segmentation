@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .plot-container {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .plot-title {
+            margin-bottom: 15px;
+            color: #343a40;
+            font-weight: bold;
+        }
+        .plot-image {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Data Visualizations</h1>
+        
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>Filter Data</h5>
+            </div>
+            <div class="card-body">
+                <form id="filter-form" method="POST" action="{{ url_for('visualize_data') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select class="form-control" id="gender" name="gender">
+                                    <option value="">All</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="age_min">Min Age</label>
+                                <input type="number" class="form-control" id="age_min" name="age_min" min="0" placeholder="Min age">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="age_max">Max Age</label>
+                                <input type="number" class="form-control" id="age_max" name="age_max" min="0" placeholder="Max age">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="profession">Profession</label>
+                                <select class="form-control" id="profession" name="profession">
+                                    <option value="">All</option>
+                                    {% for profession in professions %}
+                                        <option value="{{ profession }}">{{ profession }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="ever_married">Marital Status</label>
+                                <select class="form-control" id="ever_married" name="ever_married">
+                                    <option value="">All</option>
+                                    <option value="Yes">Married</option>
+                                    <option value="No">Not Married</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="graduated">Graduation Status</label>
+                                <select class="form-control" id="graduated" name="graduated">
+                                    <option value="">All</option>
+                                    <option value="Yes">Graduated</option>
+                                    <option value="No">Not Graduated</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="spending_score">Spending Score</label>
+                                <select class="form-control" id="spending_score" name="spending_score">
+                                    <option value="">All</option>
+                                    <option value="Low">Low</option>
+                                    <option value="Average">Average</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="family_size">Family Size</label>
+                                <input type="number" class="form-control" id="family_size" name="family_size" min="1" placeholder="Family size">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <button type="reset" class="btn btn-secondary">Reset Filters</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Visualizations Section -->
+        <div id="visualizations">
+            {% if plots %}
+                <!-- Demographic Visualizations -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Gender Distribution</h5>
+                            <img src="{{ plots.gender_distribution }}" alt="Gender Distribution" class="plot-image">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Age Distribution</h5>
+                            <img src="{{ plots.age_distribution }}" alt="Age Distribution" class="plot-image">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Marital Status Distribution</h5>
+                            <img src="{{ plots.marital_status }}" alt="Marital Status" class="plot-image">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Graduation Status</h5>
+                            <img src="{{ plots.graduation_status }}" alt="Graduation Status" class="plot-image">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Professional Visualizations -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Profession Distribution</h5>
+                            <img src="{{ plots.profession_distribution }}" alt="Profession Distribution" class="plot-image">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Work Experience Distribution</h5>
+                            <img src="{{ plots.work_experience }}" alt="Work Experience" class="plot-image">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Spending and Family Visualizations -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Spending Score Distribution</h5>
+                            <img src="{{ plots.spending_score_dist }}" alt="Spending Score" class="plot-image">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="plot-container">
+                            <h5 class="plot-title">Family Size Distribution</h5>
+                            <img src="{{ plots.family_size_dist }}" alt="Family Size" class="plot-image">
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    No visualizations available. Please apply filters to generate visualizations.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Reset form button functionality
+        $('button[type="reset"]').click(function() {
+            $('#filter-form')[0].reset();
+        });
+    </script>
+</body>
+</html>

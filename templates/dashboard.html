@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="bi bi-speedometer2"></i> Dashboard Overview</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-success h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Total Customers</h5>
+                                    <p class="card-text display-4">{{ stats.total_customers }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-info h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Average Age</h5>
+                                    <p class="card-text display-4">{{ stats.avg_age }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-warning h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Top Profession</h5>
+                                    <p class="card-text display-4">{{ stats.most_common_profession }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-danger h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Gender Ratio</h5>
+                                    <p class="card-text">
+                                        <span class="badge bg-light text-dark">{{ stats.male_count }} Male</span>
+                                        <span class="badge bg-light text-dark">{{ stats.female_count }} Female</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Data Analysis</h5>
+                                    <p class="card-text">Explore and filter customer data with advanced options</p>
+                                    <a href="{{ url_for('analyze_data') }}" class="btn btn-primary">
+                                        <i class="bi bi-filter-square"></i> Analyze Data
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Visualizations</h5>
+                                    <p class="card-text">View interactive charts and graphs of customer segments</p>
+                                    <a href="{{ url_for('visualize_data') }}" class="btn btn-primary">
+                                        <i class="bi bi-bar-chart-line"></i> View Visualizations
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

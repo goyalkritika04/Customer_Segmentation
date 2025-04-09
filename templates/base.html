@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Customer Segmentation App{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home_page') }}">CustomerSeg</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home_page') }}">Home</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('visualize_data') }}">Visualizations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('analyze_data') }}">Analyze Data</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ current_user.id }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile_page') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('feedback_page') }}">Give Feedback</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('view_feedback') }}">View Feedback</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout_page') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login_page') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register_page') }}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="bg-light text-center text-lg-start mt-5">
+        <div class="text-center p-3 bg-primary text-white">
+            © 2023 Customer Segmentation App
+        </div>
+    </footer>
+
+    <!-- Chatbot Elements -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <button type="button" class="btn btn-primary btn-lg rounded-circle shadow-lg" 
+                data-bs-toggle="modal" data-bs-target="#chatbotModal"
+                style="width: 60px; height: 60px;">
+            <i class="bi bi-robot"></i>
+        </button>
+    </div>
+
+    <div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="chatbotModalLabel">
+                        <i class="bi bi-robot"></i> CustomerSeg Assistant
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="height: 60vh; display: flex; flex-direction: column;">
+                    <div id="chatbotMessages" style="flex-grow: 1; overflow-y: auto; margin-bottom: 1rem;">
+                        <div class="alert alert-info d-inline-block">
+                            <strong>Assistant:</strong> Hello{% if current_user.is_authenticated %} {{ current_user.id }}{% endif %}! 
+                            I'm your Customer Segmentation assistant. How can I help you today?
+                        </div>
+                        <div class="alert alert-secondary d-inline-block">
+                            Try asking about:<br>
+                            - Data visualizations<br>
+                            - Customer analysis<br>
+                            - Exporting data
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="chatbotInput" class="form-control" placeholder="Type your question..." autocomplete="off">
+                        <button class="btn btn-primary" id="sendMessageBtn">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Chatbot functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatbotMessages = document.getElementById('chatbotMessages');
+        const chatbotInput = document.getElementById('chatbotInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `alert ${isUser ? 'alert-secondary' : 'alert-info'} d-inline-block`;
+            messageDiv.style.maxWidth = '80%';
+            messageDiv.style.marginBottom = '10px';
+            messageDiv.style.wordBreak = 'break-word';
+            messageDiv.innerHTML = isUser ? `<strong>You:</strong> ${text}` : `<strong>Assistant:</strong> ${text}`;
+            chatbotMessages.appendChild(messageDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+        
+        function sendMessage() {
+            const message = chatbotInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                chatbotInput.value = '';
+                
+                fetch('/chatbot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addMessage(data.reply);
+                    } else {
+                        addMessage("Sorry, I encountered an error. Please try again later.");
+                    }
+                })
+                .catch(error => {
+                    addMessage("Oops! I'm having connection issues. Try again soon.");
+                    console.error('Chatbot error:', error);
+                });
+            }
+        }
+        
+        sendMessageBtn.addEventListener('click', sendMessage);
+        chatbotInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Focus input when modal opens
+        document.getElementById('chatbotModal').addEventListener('shown.bs.modal', function() {
+            chatbotInput.focus();
+        });
+    });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

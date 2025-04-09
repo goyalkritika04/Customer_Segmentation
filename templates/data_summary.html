@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Data Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3><i class="bi bi-database"></i> Dataset Summary</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">Columns</div>
+                        <div class="card-body">
+                            <ul>
+                                {% for column in summary.columns %}
+                                <li>{{ column }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">Missing Values</div>
+                        <div class="card-body">
+                            <ul>
+                                {% for col, count in summary.missing_values.items() %}
+                                <li>{{ col }}: {{ count }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Numeric Statistics</div>
+                        <div class="card-body">
+                            {{ summary.numeric_stats|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">Categorical Statistics</div>
+                        <div class="card-body">
+                            {{ summary.categorical_stats|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
