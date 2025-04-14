@@ -1,37 +1,251 @@
 {% extends "base.html" %}
 
-{% block title %}User Profile{% endblock %}
+{% block title %}User Profile - {{ user['username'] }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h3><i class="bi bi-person-circle"></i> User Profile</h3>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label"><strong>Username:</strong></label>
-                    <p class="form-control-plaintext">{{ user['username'] }}</p>
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="bi bi-person-circle me-2"></i>User Profile
+                        </h3>
+                        <span class="badge bg-light text-primary">
+                            {% if user['is_admin'] %}Admin{% else %}Standard User{% endif %}
+                        </span>
+                    </div>
                 </div>
                 
-                <div class="mb-3">
-                    <label class="form-label"><strong>Email:</strong></label>
-                    <p class="form-control-plaintext">{{ user['email'] }}</p>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="avatar-container mb-3">
+                                <img src="{{ url_for('static', filename='images/default-avatar.png') }}" 
+                                     class="img-thumbnail rounded-circle profile-avatar" 
+                                     alt="Profile Avatar"
+                                     id="profileAvatar">
+                                <div class="avatar-overlay" id="avatarOverlay">
+                                    <i class="bi bi-camera-fill"></i>
+                                </div>
+                                <input type="file" id="avatarUpload" accept="image/*" class="d-none">
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" id="changeAvatarBtn">
+                                <i class="bi bi-camera"></i> Change Avatar
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1"><strong>Username</strong></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                            <p class="form-control-plaintext">{{ user['username'] }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1"><strong>Email</strong></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                            <p class="form-control-plaintext">{{ user['email'] }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1"><strong>Member Since</strong></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                            <p class="form-control-plaintext">
+                                                {{ user['created_at']|format_datetime if user['created_at'] else 'Just now' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1"><strong>Last Login</strong></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-clock-history"></i></span>
+                                            <p class="form-control-plaintext">
+                                                {{ user['last_login']|format_datetime if user['last_login'] else 'Never' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Activity Stats</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Visualizations Created
+                                            <span class="badge bg-primary rounded-pill">{{ user['visualization_count']|default(0) }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Analyses Performed
+                                            <span class="badge bg-primary rounded-pill">{{ user['analysis_count']|default(0) }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Feedback Submitted
+                                            <span class="badge bg-primary rounded-pill">{{ user['feedback_count']|default(0) }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Security</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('update_profile') }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-pencil-square"></i> Update Profile
+                                        </a>
+                                        <a href="{{ url_for('logout_page') }}" class="btn btn-outline-danger">
+                                            <i class="bi bi-box-arrow-right"></i> Logout
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="mb-3">
-                    <label class="form-label"><strong>Account Created:</strong></label>
-                    <p class="form-control-plaintext">Just now</p>
-                </div>
-                
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                        <i class="bi bi-arrow-left"></i> Back to Dashboard
-                    </a>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle"></i> Profile last updated: {{ user['updated_at']|format_datetime if user['updated_at'] else 'Never' }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .avatar-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+    }
+    
+    .profile-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+    
+    .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .avatar-container:hover .avatar-overlay {
+        opacity: 1;
+    }
+    
+    .avatar-container:hover .profile-avatar {
+        transform: scale(1.05);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Avatar upload functionality
+    const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+    const avatarUpload = document.getElementById('avatarUpload');
+    const profileAvatar = document.getElementById('profileAvatar');
+    const avatarOverlay = document.getElementById('avatarOverlay');
+    
+    // Click overlay or button to trigger file input
+    [avatarOverlay, changeAvatarBtn].forEach(element => {
+        element.addEventListener('click', () => avatarUpload.click());
+    });
+    
+    // Handle file selection
+    avatarUpload.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                profileAvatar.src = event.target.result;
+                
+                // In a real app, you would upload the image to the server here
+                // Example:
+                // const formData = new FormData();
+                // formData.append('avatar', e.target.files[0]);
+                // fetch('/upload_avatar', {
+                //     method: 'POST',
+                //     body: formData
+                // }).then(response => {
+                //     // Handle response
+                // });
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed bottom-0 end-0 p-3';
+                toast.style.zIndex = '11';
+                toast.innerHTML = `
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header bg-success text-white">
+                            <strong class="me-auto">Success</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            Avatar updated successfully!
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            };
+            
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+});
+</script>
 {% endblock %}

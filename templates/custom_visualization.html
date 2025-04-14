@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Custom Visualization{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3><i class="bi bi-bar-chart-line"></i> Custom Visualization</h3>
+            </div>
+            <div class="card-body">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Chart Type</label>
+                                <select class="form-select" name="chart_type" id="chartType" required>
+                                    <option value="">Select chart type</option>
+                                    <option value="bar">Bar Chart</option>
+                                    <option value="scatter">Scatter Plot</option>
+                                    <option value="box">Box Plot</option>
+                                    <option value="hist">Histogram</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">X-Axis</label>
+                                <select class="form-select" name="x_axis" id="xAxis" required>
+                                    <option value="">Select X-axis</option>
+                                    {% for column in columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3" id="yAxisGroup">
+                                <label class="form-label">Y-Axis</label>
+                                <select class="form-select" name="y_axis" id="yAxis">
+                                    <option value="">Select Y-axis</option>
+                                    {% for column in columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Required for all chart types except histogram</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Color Scheme</label>
+                                <select class="form-select" name="color_scheme">
+                                    <option value="viridis">Viridis</option>
+                                    <option value="plasma">Plasma</option>
+                                    <option value="magma">Magma</option>
+                                    <option value="coolwarm">Coolwarm</option>
+                                    <option value="Spectral">Spectral</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Save As (optional)</label>
+                                <input type="text" class="form-control" name="save_name" 
+                                       placeholder="My Favorite Chart">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-eye"></i> Generate Chart
+                            </button>
+                        </form>
+                        
+                        {% if saved_visualizations %}
+                        <div class="mt-4">
+                            <h5>Saved Visualizations</h5>
+                            <div class="list-group">
+                                {% for viz in saved_visualizations %}
+                                <a href="#" class="list-group-item list-group-item-action" 
+                                   onclick="loadSavedVisualization({{ viz.config|tojson|safe }})">
+                                    {{ viz.name }} ({{ viz.config.chart_type }})
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-8">
+                        {% if plot_url %}
+                        <div class="text-center">
+                            <img src="data:image/png;base64,{{ plot_url }}" 
+                                 class="img-fluid border rounded" alt="Custom Visualization"
+                                 style="max-height: 500px;">
+                            <div class="mt-2">
+                                <a href="data:image/png;base64,{{ plot_url }}" 
+                                   class="btn btn-sm btn-outline-primary" download="visualization.png">
+                                    <i class="bi bi-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info h-100 d-flex align-items-center justify-content-center">
+                            <div class="text-center">
+                                <i class="bi bi-bar-chart-line display-4 text-muted mb-3"></i>
+                                <h4>Configure and generate your custom visualization</h4>
+                                <p class="text-muted">Select chart type and axes to begin</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide Y-axis based on chart type
+document.getElementById('chartType').addEventListener('change', function() {
+    const yAxisGroup = document.getElementById('yAxisGroup');
+    if (this.value === 'hist') {
+        yAxisGroup.style.display = 'none';
+        document.getElementById('yAxis').required = false;
+    } else {
+        yAxisGroup.style.display = 'block';
+        document.getElementById('yAxis').required = true;
+    }
+});
+
+// Load saved visualization
+function loadSavedVisualization(config) {
+    document.getElementById('chartType').value = config.chart_type;
+    document.getElementById('xAxis').value = config.x_axis;
+    document.getElementById('yAxis').value = config.y_axis || '';
+    
+    // Trigger change event to update UI
+    document.getElementById('chartType').dispatchEvent(new Event('change'));
+    
+    // Submit the form
+    document.querySelector('form').submit();
+}
+</script>
+{% endblock %}
