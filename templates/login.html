@@ -3,436 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Clustering App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Login - Customer Segmentation App</title>
     <style>
         :root {
-            --primary-color: #6a11cb;
-            --secondary-color: #2575fc;
-            --accent-color: #ff6b6b;
-            --light-color: rgba(255, 255, 255, 0.9);
-            --dark-color: rgba(0, 0, 0, 0.7);
-            --success-color: #4CAF50;
-            --error-color: #f44336;
-            --warning-color: #ff9800;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --dark-color: #5a5c69;
+            --light-color: #f8f9fc;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            background-size: 400% 400%;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #007BFF, rgb(208, 255, 0));
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             min-height: 100vh;
-            animation: gradientBG 15s ease infinite;
-            color: var(--light-color);
+            color: #fff;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
         }
 
         .container {
-            width: 100%;
-            max-width: 420px;
+            width: 420px;
+            padding: 30px;
+            border-radius: 15px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(12px);
-            text-align: center;
-            transform-style: preserve-3d;
-            transform: perspective(1000px);
-            transition: all 0.5s ease;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(15px);
+            animation: fadeIn 0.8s ease-in-out;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .container:hover {
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            transform: perspective(1000px) translateY(-5px);
-        }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.1) rotate(10deg);
-        }
-
-        .logo i {
-            font-size: 2.5rem;
-            color: var(--light-color);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
+            font-size: 24px;
             font-weight: 600;
-            letter-spacing: 1px;
-            position: relative;
-            display: inline-block;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 3px;
-            background: var(--light-color);
-            border-radius: 3px;
+        .form-control {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            height: 42px;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+            color: #fff;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .btn-login {
+            background: var(--secondary-color);
+            border: none;
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+            height: 42px;
+            font-size: 0.95rem;
+        }
+
+        .btn-login:hover {
+            background: #17a673;
+            transform: translateY(-2px);
         }
 
         .input-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-            text-align: left;
+            width: 90%;
+            margin-bottom: 1rem;
         }
 
-        .input-group input {
-            width: 100%;
-            padding: 1rem 1rem 1rem 3rem;
-            border: none;
-            border-radius: 10px;
+        .input-group-text {
             background: rgba(255, 255, 255, 0.15);
-            color: var(--light-color);
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-group input::placeholder {
-            color: transparent;
-        }
-
-        .input-group input:focus,
-        .input-group input:not(:placeholder-shown) {
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
-        }
-
-        .input-group label {
-            position: absolute;
-            top: 1rem;
-            left: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            pointer-events: none;
+            width: 42px;
+            justify-content: center;
         }
 
-        .input-group i {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label,
-        .input-group input:focus ~ i,
-        .input-group input:not(:placeholder-shown) ~ i {
-            color: var(--light-color);
-            transform: translateY(-5px);
-            font-size: 0.8rem;
-        }
-
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label {
-            top: -0.5rem;
-            left: 3rem;
-            background: var(--primary-color);
-            padding: 0 0.5rem;
-            border-radius: 10px;
-        }
-
-        .button {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            border: none;
-            border-radius: 10px;
-            color: var(--light-color);
-            font-size: 1rem;
-            font-weight: 600;
+        .toggle-password {
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            width: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+        .toggle-password:hover {
+            background: rgba(255, 255, 255, 0.25);
         }
 
-        .button:active {
-            transform: translateY(1px);
+        .form-check-input {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 18px;
+            height: 18px;
+            margin-top: 0.15rem;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .form-check-label {
+            font-size: 0.85rem;
+            margin-left: 0.3rem;
+        }
+
+        .forgot-password {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .forgot-password:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .register-link a {
+            color: var(--light-color);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .register-link a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
         }
 
         .flash-messages {
             list-style: none;
             padding: 0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 15px;
         }
 
         .flash-messages li {
-            padding: 0.8rem 1rem;
-            margin-bottom: 0.8rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            animation: fadeIn 0.5s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            animation: fadeIn 0.5s ease-in-out;
         }
 
         .error-message {
-            background-color: rgba(var(--error-color), 0.3);
-            border-left: 4px solid var(--error-color);
+            background-color: rgba(231, 74, 59, 0.3);
         }
 
         .success-message {
-            background-color: rgba(var(--success-color), 0.3);
-            border-left: 4px solid var(--success-color);
+            background-color: rgba(28, 200, 138, 0.3);
         }
 
-        .warning-message {
-            background-color: rgba(var(--warning-color), 0.3);
-            border-left: 4px solid var(--warning-color);
-        }
-
-        .links {
-            margin-top: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .links a {
-            color: var(--light-color);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .links a:hover {
-            color: var(--accent-color);
-            transform: translateX(5px);
-        }
-
-        .links a::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--accent-color);
-            transition: width 0.3s ease;
-        }
-
-        .links a:hover::after {
-            width: 100%;
-        }
-
-        .forgot-password {
-            text-align: right;
-            margin-top: -0.8rem;
-            margin-bottom: 1rem;
-        }
-
-        .forgot-password a {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.8rem;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .forgot-password a:hover {
-            color: var(--light-color);
-        }
-
-        @media (max-width: 500px) {
+        @media (max-width: 576px) {
             .container {
                 width: 90%;
-                padding: 1.5rem;
+                padding: 25px;
             }
             
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
             }
             
-            .input-group input {
-                padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+            .form-control {
+                height: 40px;
+                padding: 0.5rem 0.8rem;
             }
-            
-            .input-group i {
-                left: 0.8rem;
-            }
-            
-            .input-group label {
-                left: 2.5rem;
-            }
-        }
-
-        /* Loading animation for button */
-        .button.loading {
-            position: relative;
-            pointer-events: none;
-        }
-
-        .button.loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: var(--light-color);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container animate__animated animate__fadeIn">
-        <div class="logo">
-            <i class="fas fa-shield-alt"></i>
-        </div>
+    <div class="main-content">
+        <div class="container">
+            <h1>🔐 Welcome Back</h1> 
+            <p class="text-center mb-3" style="font-size: 1rem;">Sign in to access your customer segmentation dashboard</p> <br>
 
-        <h1>Welcome Back</h1>
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <ul class="flash-messages">
+                        {% for category, message in messages %}
+                            <li class="{{ category }}-message">
+                                {% if category == 'error' %}
+                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                {% elif category == 'success' %}
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                {% endif %}
+                                {{ message }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
 
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flash-messages">
-                    {% for category, message in messages %}
-                        <li class="{{ category }}-message animate__animated animate__fadeIn">
-                            {% if category == 'error' %}
-                                <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
-                            {% elif category == 'success' %}
-                                <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
-                            {% else %}
-                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
-                            {% endif %}
-                            {{ message }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-
-        <form method="POST" id="loginForm">
-            <div class="input-group">
-                <input type="text" name="username" id="username" placeholder=" " required>
-                <i class="fas fa-user"></i>
-                <label for="username">Username</label>
-            </div>
-
-            <div class="input-group">
-                <input type="password" name="password" id="password" placeholder=" " required>
-                <i class="fas fa-lock"></i>
-                <label for="password">Password</label>
-            </div>
-
-            <div class="forgot-password">
-                <a href="{{ url_for('forgot_password') }}">Forgot password?</a>
-            </div>
-
-            <button type="submit" class="button" id="loginButton">
-                <span>Login</span>
-            </button>
-        </form>
-
-        <div class="links">
-            <a href="{{ url_for('register_page') }}">
-                <i class="fas fa-user-plus" style="margin-right: 8px;"></i>
-                Don't have an account? Register here
-            </a>
-            <a href="{{ url_for('home_page') }}">
-                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
-                Back to home page
-            </a>
+            <form method="POST">
+                <div class="mb-2">
+                    <label for="username" class="form-label" style="font-size: 1.1rem;">Username</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+                    </div>
+                </div>
+                
+                <div class="mb-2">
+                    <label for="password" class="form-label" style="font-size: 1.1rem;">Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                        <label class="form-check-label" for="remember" style="font-size: 1.1rem;">Remember me</label>
+                    </div>
+                    <div class="text-end" style="position: absolute ; right: 40px; bottom: 115px">
+                        <a href="{{ url_for('forgot_password') }}" class="forgot-password">
+                            Forgot password?
+                        </a>
+                    </div>
+                </div> <br>
+                
+                <button type="submit" class="btn btn-login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                </button>
+                
+                <div class="register-link" style="font-size: 1.1rem;">
+                    Don't have an account? <a href="{{ url_for('register_page') }}">Register here</a>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        // Add loading state to button
-        document.getElementById('loginForm').addEventListener('submit', function() {
-            const button = document.getElementById('loginButton');
-            button.classList.add('loading');
-            button.querySelector('span').style.visibility = 'hidden';
-        });
-
-        // Add focus effects
-        const inputs = document.querySelectorAll('.input-group input');
-        inputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.querySelector('i').style.color = 'var(--light-color)';
-            });
-            
-            input.addEventListener('blur', function() {
-                if (!this.value) {
-                    this.parentElement.querySelector('i').style.color = 'rgba(255, 255, 255, 0.7)';
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.parentNode.querySelector('input');
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye-fill');
+                    icon.classList.add('bi-eye-slash-fill');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash-fill');
+                    icon.classList.add('bi-eye-fill');
                 }
             });
-        });
-
-        // Add animation to container on load
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.querySelector('.container');
-            container.style.opacity = '0';
-            container.style.transform = 'perspective(1000px) translateY(20px)';
-            
-            setTimeout(() => {
-                container.style.opacity = '1';
-                container.style.transform = 'perspective(1000px) translateY(0)';
-            }, 100);
         });
     </script>
 </body>

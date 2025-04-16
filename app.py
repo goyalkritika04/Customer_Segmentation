@@ -1,6 +1,6 @@
 import os
-import sqlite3
-import random
+import json
+from datetime import datetime
 from flask import Flask, render_template, request, flash, redirect, url_for, Response, jsonify, session
 from flask_login import LoginManager, UserMixin, login_user, current_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,41 +10,92 @@ import seaborn as sns
 import io
 import base64
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from datetime import datetime
-from flask_mail import Mail, Message
-from itsdangerous import URLSafeTimedSerializer
-import secrets
-import string
-from werkzeug.utils import secure_filename
-import json
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-import numpy as np
+import sqlite3
+from sqlite3 import Error
 
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv('APP_SECRET_KEY', 'your_default_secret_key')
 
-# Email configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
-app.config['SECURITY_PASSWORD_SALT'] = os.getenv('SECURITY_PASSWORD_SALT', 'your-secret-salt')
+# JSON User Storage Configuration
+USER_DATA_FILE = 'users.json'
 
-mail = Mail(app)
-ts = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+def load_users():
+    """Load users from database"""
+    conn = get_db_connection()
+    users = conn.execute('SELECT * FROM users').fetchall()
+    conn.close()
+    return {user['username']: dict(user) for user in users}
 
-# Load and prepare dataset
-dataset = pd.read_csv('Dataset/train.csv')
+def save_users(users):
+    """Save users to database"""
+    conn = get_db_connection()
+    try:
+        for username, user_data in users.items():
+            conn.execute('''
+                INSERT OR REPLACE INTO users (username, email, password, created_at, last_login)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (
+                username,
+                user_data['email'],
+                user_data['password'],
+                user_data.get('created_at'),
+                user_data.get('last_login')
+            ))
+        conn.commit()
+    finally:
+        conn.close()
 
-# Data cleaning
-dataset['Profession'] = dataset['Profession'].fillna('Unknown')
-dataset['Gender'] = dataset['Gender'].fillna('Unknown')
-if 'Spending_Score' in dataset.columns:
-    dataset['Spending_Score'] = dataset['Spending_Score'].fillna('Unknown')
+def add_user(username, email, password):
+    """Add a new user to the database"""
+    conn = get_db_connection()
+    try:
+        conn.execute('''
+            INSERT INTO users (username, email, password)
+            VALUES (?, ?, ?)
+        ''', (username, email, generate_password_hash(password)))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+def update_user(username, updates):
+    """Update user information in database"""
+    conn = get_db_connection()
+    try:
+        # Build the update query dynamically based on what fields are being updated
+        set_clause = ', '.join(f"{key} = ?" for key in updates.keys())
+        values = list(updates.values())
+        values.append(username)  # For the WHERE clause
+        
+        conn.execute(f'''
+            UPDATE users 
+            SET {set_clause}
+            WHERE username = ?
+        ''', values)
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error updating user: {e}")
+        return False
+    finally:
+        conn.close()
+
+# Add this new function to your existing app.py
+def check_password_strength(password):
+    """Check password strength and return a score (0-4)"""
+    score = 0
+    if len(password) >= 8:
+        score += 1
+    if any(c.isupper() for c in password) and any(c.islower() for c in password):
+        score += 1
+    if any(c.isdigit() for c in password):
+        score += 1
+    if any(not c.isalnum() for c in password):
+        score += 1
+    return score
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -52,87 +103,87 @@ login_manager.init_app(app)
 login_manager.login_view = "login_page"
 
 class User(UserMixin):
-    pass
-
+    def __init__(self, user_data):
+        self.id = user_data['username']
+        self.username = user_data['username']
+        self.email = user_data['email']
+        self.password_hash = user_data['password']
+        self.created_at = user_data.get('created_at')
+        self.last_login = user_data.get('last_login')
 
 @login_manager.user_loader
 def user_loader(username):
-    user = get_user_by_username(username)
-    if user:
-        user_obj = User()
-        user_obj.id = username
-        return user_obj
+    users = load_users()
+    user_data = users.get(username)
+    if user_data:
+        user_data['username'] = username  # Add username to the data
+        return User(user_data)
+    return None
+
+def get_user_by_username(username):
+    """Get user data by username"""
+    users = load_users()
+    user_data = users.get(username)
+    if user_data:
+        user_data['username'] = username  # Add username to the data
+        return user_data
     return None
 
 def get_db_connection():
-    conn = sqlite3.connect('users.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def create_user_table():
-    conn = get_db_connection()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
-        )
-    ''')
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS feedback (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            feedback TEXT NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(username) REFERENCES users(username)
-        )
-    ''')
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS user_visualizations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            name TEXT NOT NULL,
-            config TEXT NOT NULL,
-            FOREIGN KEY(username) REFERENCES users(username)
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-def get_user_by_username(username):
-    conn = get_db_connection()
-    user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
-    conn.close()
-    return user
-
-def get_user_by_email(email):
-    conn = get_db_connection()
-    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-    conn.close()
-    return user
-
-def add_user(username, email, password):
-    hashed_password = generate_password_hash(password)
-    conn = get_db_connection()
-    conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
-                (username, email, hashed_password))
-    conn.commit()
-    conn.close()
-
-def get_user_visualizations(username):
+    """Create and return a database connection"""
+    conn = None
+    try:
+        conn = sqlite3.connect('database.db')
+        conn.row_factory = sqlite3.Row  # This allows accessing columns by name
+        return conn
+    except Error as e:
+        print(f"Error connecting to database: {e}")
+        raise
+    
+def init_db():
+    """Initialize the database with required tables"""
     conn = get_db_connection()
     try:
-        visualizations = conn.execute('''
-            SELECT name, config FROM user_visualizations 
-            WHERE username = ?
-        ''', (username,)).fetchall()
-        return [{'name': v['name'], 'config': json.loads(v['config'])} for v in visualizations]
-    except:
-        return []
+        # Create users table if not exists
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_login DATETIME
+            )
+        ''')
+        
+        # Create feedback table if not exists
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS feedback (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                feedback TEXT NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(username) REFERENCES users(username)
+            )
+        ''')
+        
+        conn.commit()
+    except Error as e:
+        print(f"Error initializing database: {e}")
+        raise
     finally:
         conn.close()
 
+# Initialize the database
+init_db()
+
+# Load dataset
+dataset = pd.read_csv('Dataset/train.csv')
+dataset['Profession'] = dataset['Profession'].fillna('Unknown')
+dataset['Gender'] = dataset['Gender'].fillna('Unknown')
+if 'Spending_Score' in dataset.columns:
+    dataset['Spending_Score'] = dataset['Spending_Score'].fillna('Unknown')
+
+# Routes
 @app.route("/")
 def home_page():
     return render_template("home.html", current_user=current_user)
@@ -144,12 +195,21 @@ def register_page():
         username = request.form['username']
         password = request.form['password']
         
-        if get_user_by_username(username):
-            flash("Username already exists!", "danger")
+        if username in load_users():
+            flash("Username already exists! Please try a different one.", "danger")
+        elif any(u['email'] == email for u in load_users().values()):
+            flash("Email already registered! Do you want to login instead?", "danger")
         else:
-            add_user(username, email, password)
-            flash("Registration successful! Please log in.", "success")
-            return redirect(url_for('login_page'))
+            if add_user(username, email, password):
+                user_data = load_users().get(username)
+                user_data['username'] = username
+                user = User(user_data)
+                login_user(user)
+                flash("Registration successful!", "success")
+                # Stay on register page to show the congrats box
+                return render_template("register.html")
+            else:
+                flash("Registration failed. Please try again.", "danger")
     
     return render_template("register.html", current_user=current_user)
 
@@ -158,16 +218,23 @@ def login_page():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = get_user_by_username(username)
+        users = load_users()
+        user_data = users.get(username)
         
-        if user and check_password_hash(user['password'], password):
-            user_obj = User()
-            user_obj.id = username
-            login_user(user_obj)
+        if user_data and check_password_hash(user_data['password'], password):
+            user_data['username'] = username
+            user = User(user_data)
+            login_user(user)
+            
+            # Update last login time
+            update_user(username, {'last_login': datetime.now().isoformat()})
+            
+            flash("🔒 You're now securely logged in to your account.", "info")
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('home_page'))
+            return redirect(next_page or url_for('dashboard'))
         else:
-            flash("Invalid username or password!", "danger")
+            flash("Oops! Invalid username or password. Please try again.", "danger")
+            flash("💡 Forgot your password? Click the link below to reset it.", "info")
     
     return render_template("login.html", current_user=current_user)
 
@@ -178,6 +245,8 @@ def dashboard():
         'total_customers': len(dataset),
         'avg_age': round(dataset['Age'].mean(), 1),
         'most_common_profession': dataset['Profession'].mode()[0],
+        'male_count': len(dataset[dataset['Gender'] == 'Male']),
+        'female_count': len(dataset[dataset['Gender'] == 'Female']),
         'gender_distribution': dataset['Gender'].value_counts().to_dict()
     }
     return render_template("dashboard.html", stats=stats)
@@ -511,54 +580,44 @@ def update_profile():
         current_password = request.form['current_password']
         new_password = request.form.get('new_password')
         
-        user = get_user_by_username(current_user.id)
+        users = load_users()
+        user_data = users.get(current_user.id)
         
-        if not check_password_hash(user['password'], current_password):
+        if not user_data or not check_password_hash(user_data['password'], current_password):
             flash("Current password is incorrect", "danger")
             return redirect(url_for('update_profile'))
         
-        conn = get_db_connection()
-        
         # Check if new username is available
-        if username != current_user.id:
-            existing_user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
-            if existing_user:
-                flash("Username already taken", "danger")
-                conn.close()
-                return redirect(url_for('update_profile'))
+        if username != current_user.id and username in users:
+            flash("Username already taken", "danger")
+            return redirect(url_for('update_profile'))
         
         # Check if new email is available
-        if email != user['email']:
-            existing_email = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-            if existing_email:
-                flash("Email already in use", "danger")
-                conn.close()
-                return redirect(url_for('update_profile'))
+        if email != user_data['email'] and any(u['email'] == email for u in users.values()):
+            flash("Email already in use", "danger")
+            return redirect(url_for('update_profile'))
         
         # Update user info
-        update_query = 'UPDATE users SET username = ?, email = ?'
-        params = [username, email]
+        updates = {
+            'username': username,
+            'email': email
+        }
         
         if new_password:
-            hashed_password = generate_password_hash(new_password)
-            update_query += ', password = ?'
-            params.append(hashed_password)
+            updates['password'] = generate_password_hash(new_password)
         
-        update_query += ' WHERE username = ?'
-        params.append(current_user.id)
-        
-        conn.execute(update_query, tuple(params))
-        conn.commit()
-        conn.close()
-        
-        # Update current_user if username changed
-        if username != current_user.id:
-            user_obj = User()
-            user_obj.id = username
-            login_user(user_obj)
-        
-        flash("Profile updated successfully", "success")
-        return redirect(url_for('profile_page'))
+        if update_user(current_user.id, updates):
+            # Update current_user if username changed
+            if username != current_user.id:
+                user_data = get_user_by_username(username)
+                user = User(user_data)
+                login_user(user)
+            
+            flash("Profile updated successfully", "success")
+            return redirect(url_for('profile_page'))
+        else:
+            flash("Failed to update profile", "danger")
+            return redirect(url_for('update_profile'))
     
     user = get_user_by_username(current_user.id)
     return render_template("update_profile.html", user=user)
@@ -756,5 +815,8 @@ def view_feedback():
     return render_template("view_feedback.html", feedback_data=feedback_data)
 
 if __name__ == "__main__":
-    create_user_table()
+    # Create empty users file if it doesn't exist
+    if not os.path.exists(USER_DATA_FILE):
+        with open(USER_DATA_FILE, 'w') as f:
+            json.dump({}, f)
     app.run(debug=True)
