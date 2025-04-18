@@ -1,7 +1,7 @@
 /* Base styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+    background-color: #123861;
     color: #212529;
 }
 
@@ -49,13 +49,13 @@ body {
 }
 
 .btn-primary {
-    background-color: #0d6efd;
+    background-color: #36609e;
     border-color: #0d6efd;
 }
 
 .btn-primary:hover {
     background-color: #0b5ed7;
-    border-color: #0a58ca;
+    border-color: #204883;
 }
 
 /* Alert styles */
